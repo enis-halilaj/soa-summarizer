@@ -106,58 +106,6 @@ app.post('/summarize', (req, res) => {
     }
 });
 
-// New comparison endpoint
-app.post('/compare', async (req, res) => {
-    try {
-        const { text } = req.body;
-        
-        if (!text) {
-            return res.status(400).json({ error: 'Text is required' });
-        }
-
-        // Get summaries from both services
-        const classicSummary = summarizeText(text);
-        
-        // Get AI summary
-        const aiResponse = await axios.post('http://localhost:3000/summarize', { text });
-        const aiSummary = aiResponse.data.summary;
-
-        // Calculate comparison metrics
-        const comparison = {
-            classicSummary,
-            aiSummary,
-            metrics: {
-                // Length comparison
-                classicLength: classicSummary.length,
-                aiLength: aiSummary.length,
-                lengthDifference: Math.abs(classicSummary.length - aiSummary.length),
-                
-                // Word count comparison
-                classicWordCount: classicSummary.split(/\s+/).length,
-                aiWordCount: aiSummary.split(/\s+/).length,
-                wordCountDifference: Math.abs(
-                    classicSummary.split(/\s+/).length - 
-                    aiSummary.split(/\s+/).length
-                ),
-                
-                // Content similarity (using Jaccard similarity)
-                contentSimilarity: calculateSimilarity(classicSummary, aiSummary),
-                
-                // Information retention (approximate)
-                informationRetention: {
-                    classic: calculateInformationRetention(text, classicSummary),
-                    ai: calculateInformationRetention(text, aiSummary)
-                }
-            }
-        };
-
-        res.json(comparison);
-    } catch (error) {
-        console.error('Error:', error.message);
-        res.status(500).json({ error: 'Failed to compare summaries' });
-    }
-});
-
 // Helper function to calculate Jaccard similarity between two texts
 function calculateSimilarity(text1, text2) {
     const words1 = new Set(text1.toLowerCase().split(/\s+/));
