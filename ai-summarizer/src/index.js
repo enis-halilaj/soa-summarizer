@@ -18,7 +18,7 @@ app.post('/summarize', async (req, res) => {
         }
 
         // Call Ollama API
-        const response = await axios.post('http://localhost:11434/api/generate', {
+        const response = await axios.post('http://127.0.0.1:11434/api/generate', {
             model: 'llama2',
             prompt: `Summarize the following text in a concise way, maintaining the key points:\n\n${text}`,
             stream: false
