@@ -65,7 +65,22 @@ app.post('/compare', async (req, res) => {
                         relevance: calculateRelevance(text, aiSummary),
                         fluency: calculateFluency(aiSummary)
                     }
-                }
+                },
+                
+                // Readability scores
+                readabilityScores: {
+                    classic: {
+                        fleschKincaid: calculateFleschKincaid(classicSummary),
+                        smog: calculateSMOG(classicSummary)
+                    },
+                    ai: {
+                        fleschKincaid: calculateFleschKincaid(aiSummary),
+                        smog: calculateSMOG(aiSummary)
+                    }
+                },
+                
+                // Semantic similarity
+                semanticSimilarity: calculateSemanticSimilarity(classicSummary, aiSummary)
             }
         };
 
@@ -146,6 +161,42 @@ function calculateFluency(summary) {
     }
     
     return fluencyScore / sentences.length;
+}
+
+// Helper function to calculate Flesch-Kincaid Readability Score
+function calculateFleschKincaid(text) {
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    const words = text.split(/\s+/);
+    const syllables = words.reduce((count, word) => count + countSyllables(word), 0);
+
+    const averageSentenceLength = words.length / sentences.length;
+    const averageSyllablesPerWord = syllables / words.length;
+
+    return 0.39 * averageSentenceLength + 11.8 * averageSyllablesPerWord - 15.59;
+}
+
+// Helper function to count syllables in a word
+function countSyllables(word) {
+    word = word.toLowerCase();
+    if (word.length <= 3) return 1;
+    word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+    const syllables = word.match(/[aeiouy]{1,2}/g);
+    return syllables ? syllables.length : 1;
+}
+
+// Helper function to calculate SMOG Index
+function calculateSMOG(text) {
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    const words = text.split(/\s+/);
+    const polysyllables = words.filter(word => countSyllables(word) > 2).length;
+
+    return 1.043 * Math.sqrt(polysyllables * (30 / sentences.length)) + 3.1291;
+}
+
+// Helper function to calculate semantic similarity using Word Embeddings (placeholder)
+function calculateSemanticSimilarity(text1, text2) {
+    // Placeholder for semantic similarity calculation using Word Embeddings
+    return 0.5; // Example value
 }
 
 app.listen(port, () => {
